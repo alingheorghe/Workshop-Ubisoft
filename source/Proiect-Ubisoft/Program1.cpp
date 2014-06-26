@@ -76,8 +76,10 @@ int main () {
   float t_vertex_buffer[] = {
 	  0.0f, 0.5f, 0.0f,
 	  0.5f, 0.5f, 0.0f,
+
 	  0.5f, -0.5f, 0.0f,
 	  0.5f, 0.5f, 0.0f,
+
 	  -0.5f, -0.5f, 0.0f,
 	  0.5f, 0.5f, 0.0f
   };
@@ -111,16 +113,12 @@ int main () {
 		float alpha = 0;
 		float r = 0.5;
 		float *points;
-
 		float theta = 2 * 3.1415926 / float(n); 
-		float c = cosf(theta);//precalculate the sine and cosine
-		float s = sinf(theta);
 		float x;
 		float y; 
 		points = (float*)malloc((n+1)*2* sizeof(float));
-		
+		//calculam punctele in cauza
 		for(int i = 0 ; i < n*2; i+=2){
-			
 			x = r*cos(alpha);
 			y = r*sin(alpha);
 			alpha += theta;
@@ -132,6 +130,7 @@ int main () {
 		points[n*2 + 1] = points[1];
 		int k = 0;
 		vertex_buffer = (float *)malloc(n*9*sizeof(float));
+		//formam triunghiurile
 		for(int i = 0; i < n*9 ; i+=3){
 			vertex_buffer[i] = 0.0f;
 			vertex_buffer[i+1] = 0.0f;
@@ -150,20 +149,21 @@ int main () {
 		free(points);
 	}
   }
+  printf("%d--%d\n",n, sizeof(vertex_buffer));
 
   // Generam un buffer in memoria video si scriem in el punctele din ram
   GLuint vbo = 0;
   glGenBuffers(1, &vbo); // generam un buffer 
   glBindBuffer(GL_ARRAY_BUFFER, vbo); // setam bufferul generat ca bufferul curent 
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_buffer), vertex_buffer, GL_STATIC_DRAW); //  scriem in bufferul din memoria video informatia din bufferul din memoria RAM
+  glBufferData(GL_ARRAY_BUFFER, n  * sizeof(float), vertex_buffer, GL_STATIC_DRAW); //  scriem in bufferul din memoria video informatia din bufferul din memoria RAM
 
   // De partea aceasta am uitat sa va spun la curs -> Pentru a defini bufferul alocat de opengl ca fiind buffer de in de atribute, stream de vertecsi trebuie sa :
   // 1. Ii spunem OpenGL-ului ca vom avea un slot pentru acest atribut (in cazul nostru 0) , daca mai aveam vreun atribut ar fi trebuit si acela enablat pe alt slot (de exemplu 1)
   // 2. Definit bufferul ca Vertex Attribute Pointer cu glVertexAttribPointer
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float) , NULL);
+  //glEnableVertexAttribArray(1);
+  //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float) , (char *)(3 * sizeof(float)));
 
   while (!glfwWindowShouldClose(window)) {
 	  //..... Randare................. 
@@ -174,13 +174,13 @@ int main () {
 	  // facem bind la vertex buffer
 	  glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	  // draw points 0-3 from the currently bound VAO with current in-use shader
-	  glDrawArrays(GL_TRIANGLES, 0, n/3);
+	  glDrawArrays(GL_TRIANGLES, 0, n);
 	  // facem swap la buffere (Double buffer)
 	  glfwSwapBuffers(window);
 
 	  glfwPollEvents();
 	}
-  
+  free(vertex_buffer);
   glfwTerminate();
   return 0;
 }
