@@ -31,6 +31,7 @@ void MyGL::initGL(){
 
 	positionLocation = glGetAttribLocation(shader_programme, "pisition");
 	colorLoc = glGetUniformLocation(shader_programme, "color");
+	flip = 1;
 }
 
 
@@ -38,7 +39,15 @@ void MyGL::drawGL(){
 	for(int i = 0 ; i < objs.size() ; i ++){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 		glBindVertexArray(NULL);
-		glUniform4f(colorLoc, 0.0, 0.0, 1.0, 1.0);
+		if(i % 3 == 0){
+			glUniform4f(colorLoc, 0.0, 1.0, 0.0, 1.0);
+		}else{
+			if(i % 3 == 1){
+				glUniform4f(colorLoc, 0.0, 0.0, 1.0, 1.0);
+			}else{
+				glUniform4f(colorLoc, 0.0, 1.0, 0.0, 1.0);
+			}
+		}
 		glBindVertexArray(objs[i].vao);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, objs[i].ibo);
 		glDrawElements(GL_TRIANGLES, objs[i].vertexNumber, GL_UNSIGNED_SHORT, NULL);
@@ -46,9 +55,20 @@ void MyGL::drawGL(){
 	}
 }
 
-void MyGL::runGL(){
-	generateTriangle();
-	generatenThagone(5);
+void MyGL::runGL(int optiune, int n){
+	if(optiune == 1)
+		generateTriangle();
+	else
+		if(optiune == 2)
+			generateSquare();
+		else
+			if(optiune == 3)
+				generatenThagone(n);
+			else{
+				generateTriangle();
+				flip = -1;
+				generateTriangle();
+			}
 	while(!glfwWindowShouldClose(window)){
 		
 		//screen size
@@ -122,9 +142,9 @@ void MyGL::loadShaders(){
 void MyGL::generateTriangle(){
 
 	GLfloat vertex_buffer[] = {
-		-1.0f, -1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f,
+		-1.0f * flip, -1.0f * flip, 0.0f,
+		0.0f * flip, 1.0f * flip, 0.0f,
+		0.0f * flip, -1.0f * flip, 0.0f,
 	};
 	//vertex buffer obj
 	GLuint vboID;
@@ -162,11 +182,6 @@ void MyGL::generateTriangle(){
 	o.vbo = vboID;
 	o.vertexNumber = 3;
 	objs.push_back(o);
-
-	vao.push_back(vaoID);
-	vbo.push_back(vboID);
-	ibo.push_back(iboID);
-	vertexNumber.push_back(3);
 }
 
 void MyGL::generateSquare(){
@@ -211,15 +226,6 @@ void MyGL::generateSquare(){
 	o.vbo = vboID;
 	o.vertexNumber = 6;
 	objs.push_back(o);
-	std::cout << o.ibo << " " << iboID << std::endl;
-	std::cout << o.vao << " " << vaoID << std::endl;
-	std::cout << o.vbo << " " << vboID << std::endl;
-	std::cout << o.vertexNumber<< " " << std::endl;
-
-	vao.push_back(vaoID);
-	vbo.push_back(vboID);
-	ibo.push_back(iboID);
-	vertexNumber.push_back(6);
 }
 
 void MyGL::generatenThagone(int n){
@@ -227,17 +233,14 @@ void MyGL::generatenThagone(int n){
 	int vertex_size = ((n + 1) * 3 * sizeof(GLfloat));
 	vertex_buffer = (GLfloat *)malloc(vertex_size);
 	vertex_buffer[0] = vertex_buffer[1] = vertex_buffer[2] = 0.0f;
-	std::cout << vertex_buffer[0] << " " << vertex_buffer[1] << " " << vertex_buffer[ 2] << " -- "  << std::endl;
 	//generate vertex coord;
 	float alpha = 0;
-	float r = 0.75;
+	float r = 0.5;
 	float theta = 2 * 3.1415926 / float(n); 
 	for(int i = 3 ; i <= n * 3; i += 3){
 		vertex_buffer[i] = r*cosf(alpha);
 		vertex_buffer[i+1] = r*sinf(alpha);
 		vertex_buffer[i+2] = 0.0f;
-		
-		std::cout << vertex_buffer[i] << " " << vertex_buffer[i+1] << " " << vertex_buffer[i+2] << " -- " << alpha << std::endl;
 		alpha += theta;
 	}
 	
@@ -246,6 +249,7 @@ void MyGL::generatenThagone(int n){
 	glGenBuffers(1, &vboID);
 	glBindBuffer(GL_ARRAY_BUFFER, vboID);
 	glBufferData(GL_ARRAY_BUFFER, vertex_size, vertex_buffer, GL_STATIC_DRAW);
+
 
 	//index buffer obj
 	GLuint iboID;
@@ -262,10 +266,10 @@ void MyGL::generatenThagone(int n){
 			indexData[i+2] = 1;
 		else
 			indexData[i+2] = (++k);
-		std::cout << indexData[i] << " " << indexData[i+1] << " " << indexData[i+2] << std::endl;
 	}
 
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexData), indexData, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,   n * 3 * sizeof(GLushort), indexData, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 
 	GLuint vaoID;
 	glGenVertexArrays(1, &vaoID);

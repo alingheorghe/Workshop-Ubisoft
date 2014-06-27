@@ -16,12 +16,7 @@ public:
 
 	GLint positionLocation;
 	GLint colorLoc;
-
-	std::vector<GLuint> vbo;
-	std::vector<GLuint> vao;
-	std::vector<GLuint> ibo;
-	std::vector<int> vertexNumber;
-
+	int flip;
 	typedef struct objIdent{
 		GLuint vao;
 		GLuint vbo;
@@ -34,7 +29,7 @@ public:
 public:
 	void initGL();
 	void drawGL();
-	void runGL();
+	void runGL(int optiune, int n);
 	char * LoadFileInMemory(const char *filename);
 	void loadShaders();
 	//generare forme;
