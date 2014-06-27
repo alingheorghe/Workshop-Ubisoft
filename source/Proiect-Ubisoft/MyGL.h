@@ -22,6 +22,15 @@ public:
 	std::vector<GLuint> ibo;
 	std::vector<int> vertexNumber;
 
+	typedef struct objIdent{
+		GLuint vao;
+		GLuint vbo;
+		GLuint ibo;
+		int vertexNumber;
+	};
+
+	std::vector<objIdent> objs;
+
 public:
 	void initGL();
 	void drawGL();
